@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 220" width="1600" height="220" preserveAspectRatio="none">
+<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="67" x2="0" y2="220"><stop offset="0" stop-color="#4d4283"/><stop offset="1" stop-color="#0e0a15"/></linearGradient></defs>
+<g fill="url(#g)" opacity="1">
+<circle cx="0" cy="165" r="42"/>
+<circle cx="1600" cy="165" r="42"/>
+<circle cx="-9" cy="139" r="23"/>
+<circle cx="1591" cy="139" r="23"/>
+<circle cx="79" cy="160" r="53"/>
+<circle cx="74" cy="130" r="24"/>
+<circle cx="132" cy="154" r="63"/>
+<circle cx="157" cy="126" r="29"/>
+<circle cx="214" cy="149" r="57"/>
+<circle cx="197" cy="132" r="31"/>
+<circle cx="278" cy="168" r="41"/>
+<circle cx="276" cy="136" r="26"/>
+<circle cx="341" cy="152" r="52"/>
+<circle cx="330" cy="132" r="33"/>
+<circle cx="399" cy="169" r="69"/>
+<circle cx="476" cy="166" r="56"/>
+<circle cx="491" cy="124" r="30"/>
+<circle cx="560" cy="158" r="66"/>
+<circle cx="554" cy="128" r="36"/>
+<circle cx="624" cy="150" r="37"/>
+<circle cx="711" cy="160" r="53"/>
+<circle cx="699" cy="130" r="32"/>
+<circle cx="781" cy="152" r="57"/>
+<circle cx="801" cy="125" r="30"/>
+<circle cx="853" cy="150" r="46"/>
+<circle cx="863" cy="131" r="28"/>
+<circle cx="928" cy="170" r="59"/>
+<circle cx="993" cy="171" r="70"/>
+<circle cx="992" cy="118" r="44"/>
+<circle cx="1052" cy="152" r="66"/>
+<circle cx="1067" cy="122" r="40"/>
+<circle cx="1133" cy="154" r="38"/>
+<circle cx="1123" cy="132" r="20"/>
+<circle cx="1195" cy="172" r="67"/>
+<circle cx="1263" cy="171" r="45"/>
+<circle cx="1246" cy="130" r="27"/>
+<circle cx="1344" cy="169" r="63"/>
+<circle cx="1348" cy="128" r="34"/>
+<circle cx="1405" cy="155" r="54"/>
+<circle cx="1456" cy="171" r="59"/>
+<circle cx="1463" cy="130" r="34"/>
+<circle cx="1527" cy="158" r="45"/>
+<rect x="0" y="158" width="1600" height="62"/>
+</g>
+</svg>

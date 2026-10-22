@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atria Cloud · Workshop de AWS S3 | Atria Jr</title>
+  <meta name="description" content="Atria Cloud: um site 100% estático hospedado no Amazon S3, feito para o workshop de cloud da Atria Jr, Empresa Júnior da Faculdade de Tecnologia da UNICAMP.">
+  <meta name="theme-color" content="#0e0a15">
+  <meta property="og:title" content="Atria Cloud · Workshop de AWS S3">
+  <meta property="og:description" content="Sua ideia, acima das nuvens. Um site estático no ar direto de um bucket S3.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <canvas class="sky" id="sky" aria-hidden="true"></canvas>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <!-- Ícones reutilizáveis -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="brand-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#d4ceff"/>
+        <stop offset="1" stop-color="#7a6bd0"/>
+      </linearGradient>
+      <symbol id="i-mark" viewBox="0 0 32 32">
+        <path d="M9 24h14.5a5.5 5.5 0 0 0 .6-10.97A7.5 7.5 0 0 0 9.6 14.1 5 5 0 0 0 9 24z" fill="url(#brand-grad)"/>
+        <path d="M26 1.5 27.1 4.9 30.5 6 27.1 7.1 26 10.5 24.9 7.1 21.5 6 24.9 4.9Z" fill="#ffb86b"/>
+      </symbol>
+      <symbol id="i-laptop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20M10 9l-2 2 2 2M14 9l2 2-2 2"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9a4 4 0 0 1-.5 7.97"/><path d="M12 12v8M9 15l3-3 3 3"/></symbol>
+      <symbol id="i-bucket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="2.6"/><path d="M4 6l1.8 12.2C6 19.8 8.7 21 12 21s6-1.2 6.2-2.8L20 6"/><path d="M5.2 11.5c1.3 1 3.9 1.6 6.8 1.6s5.5-.6 6.8-1.6"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+      <symbol id="i-server-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/><path d="M8 7h.01M8 17h.01M3 3l18 18"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4c3-1 6-1 6-1s0 3-1 6l-6 6-4-4z"/><path d="M9 11l-4 1-2 3 4 .5M13 15l-1 4-3 2-.5-4"/><circle cx="16" cy="8" r="1.4"/></symbol>
+      <symbol id="i-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.2c-.5-1-1.6-1.6-3-1.6-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.7M12 6v1.6M12 16.6V18"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10-6.5z"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="nav" id="top">
+    <div class="nav__inner container">
+      <a class="brand" href="#top" aria-label="Atria Cloud, voltar ao topo">
+        <svg class="brand__mark" aria-hidden="true"><use href="#i-mark"/></svg>
+        <span class="brand__name">Atria<span>Cloud</span></span>
+      </a>
+      <nav class="nav__links" aria-label="Seções">
+        <a href="#arquitetura">Arquitetura</a>
+        <a href="#passos">Passo a passo</a>
+        <a href="#terminal">Via CLI</a>
+        <a href="#porque">Por que S3</a>
+      </nav>
+      <span class="pill pill--status" id="nav-status" data-state="local">
+        <span class="pill__dot"></span><span id="nav-status-label">verificando…</span>
+      </span>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__inner container">
+        <div class="hero__copy">
+          <p class="eyebrow" data-reveal>
+            <span class="eyebrow__tag">Workshop</span> Cloud na prática com a Atria Jr
+          </p>
+          <h1 class="hero__title" data-reveal>
+            Sua ideia,<br><span class="gradient-text">acima das nuvens.</span>
+          </h1>
+          <p class="hero__lead" data-reveal>
+            Este site é 100% estático: HTML, CSS e JavaScript servidos direto de um
+            bucket <strong>Amazon S3</strong>. Sem servidor pra manter, sem sistema
+            operacional pra atualizar — só arquivos e uma URL pública.
+          </p>
+          <div class="hero__cta" data-reveal>
+            <a class="btn btn--primary" href="#passos">
+              Bora pro deploy
+              <svg aria-hidden="true"><use href="#i-arrow"/></svg>
+            </a>
+            <a class="btn btn--ghost" href="#arquitetura">Como funciona</a>
+          </div>
+          <dl class="hero__stats" data-reveal>
+            <div><dt>0</dt><dd>servidores</dd></div>
+            <div><dt>11</dt><dd>noves de durabilidade</dd></div>
+            <div><dt>~5</dt><dd>min pro ar</dd></div>
+          </dl>
+        </div>
+
+        <aside class="deploy-card" data-reveal aria-labelledby="deploy-title">
+          <div class="deploy-card__orbit" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="window">
+            <div class="window__bar">
+              <span class="window__dots"><i></i><i></i><i></i></span>
+              <span class="window__title">deploy.status</span>
+              <span class="window__live" id="live-badge">ao vivo</span>
+            </div>
+            <div class="window__body">
+              <div class="deploy-card__hero">
+                <div class="deploy-card__icon" id="deploy-icon">
+                  <svg aria-hidden="true"><use href="#i-rocket"/></svg>
+                </div>
+                <div>
+                  <h2 class="deploy-card__title" id="deploy-title">Verificando…</h2>
+                  <p class="deploy-card__sub" id="deploy-sub">Descobrindo de onde este site está sendo servido.</p>
+                </div>
+              </div>
+              <dl class="kv" id="deploy-kv">
+                <div><dt>Endpoint</dt><dd id="kv-host">—</dd></div>
+                <div><dt>Bucket</dt><dd id="kv-bucket">—</dd></div>
+                <div><dt>Região</dt><dd id="kv-region">—</dd></div>
+                <div><dt>Protocolo</dt><dd id="kv-proto">—</dd></div>
+                <div><dt>Última atualização</dt><dd id="kv-modified">—</dd></div>
+                <div><dt>Carregou em</dt><dd id="kv-load">—</dd></div>
+              </dl>
+              <p class="deploy-card__tip" id="deploy-tip" hidden></p>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="clouds" aria-hidden="true">
+        <div class="clouds__layer clouds__layer--back"></div>
+        <div class="clouds__layer clouds__layer--front"></div>
+      </div>
+    </section>
+
+    <!-- ARQUITETURA -->
+    <section class="section" id="arquitetura">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <p class="kicker">Arquitetura</p>
+          <h2 class="section__title">Como este site chegou até você</h2>
+          <p class="section__lead">
+            Nada de servidor rodando 24/7. Os arquivos ficam guardados num bucket e o
+            próprio S3 entrega cada um deles quando o navegador pede.
+          </p>
+        </header>
+
+        <ol class="flow" data-reveal>
+          <li class="flow__node">
+            <span class="flow__icon"><svg aria-hidden="true"><use href="#i-laptop"/></svg></span>
+            <h3>Seu computador</h3>
+            <p><code>index.html</code>, <code>styles.css</code>, <code>main.js</code> e imagens.</p>
+          </li>
+          <li class="flow__link" aria-hidden="true"><span></span></li>
+          <li class="flow__node">
+            <span class="flow__icon"><svg aria-hidden="true"><use href="#i-upload"/></svg></span>
+            <h3>Upload</h3>
+            <p>Pelo Console da AWS ou com <code>aws s3 sync</code>.</p>
+          </li>
+          <li class="flow__link" aria-hidden="true"><span></span></li>
+          <li class="flow__node flow__node--star">
+            <span class="flow__icon"><svg aria-hidden="true"><use href="#i-bucket"/></svg></span>
+            <h3>Bucket S3</h3>
+            <p>Armazena os objetos e expõe um <em>website endpoint</em>.</p>
+          </li>
+          <li class="flow__link" aria-hidden="true"><span></span></li>
+          <li class="flow__node">
+            <span class="flow__icon"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>
+            <h3>Website endpoint</h3>
+            <p>Responde HTTP com <code>index.html</code> e <code>error.html</code>.</p>
+          </li>
+          <li class="flow__link" aria-hidden="true"><span></span></li>
+          <li class="flow__node">
+            <span class="flow__icon"><svg aria-hidden="true"><use href="#i-user"/></svg></span>
+            <h3>Você</h3>
+            <p>O navegador baixa os arquivos e monta a página.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- PASSO A PASSO -->
+    <section class="section" id="passos">
+      <div class="container container--narrow">
+        <header class="section__head" data-reveal>
+          <p class="kicker">Mão na massa</p>
+          <h2 class="section__title">Passo a passo do deploy</h2>
+          <p class="section__lead">
+            Escolha o nome do seu bucket e a região — todos os comandos e a policy
+            abaixo se atualizam sozinhos.
+          </p>
+        </header>
+
+        <form class="config" data-reveal onsubmit="return false" aria-label="Configuração do bucket">
+          <label class="field">
+            <span class="field__label">Nome do bucket</span>
+            <input id="bucket-input" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="atria-cloud-seunome" maxlength="63" aria-describedby="bucket-hint">
+            <span class="field__hint" id="bucket-hint">Único no mundo todo: letras minúsculas, números e hífens.</span>
+          </label>
+          <label class="field field--region">
+            <span class="field__label">Região</span>
+            <select id="region-input">
+              <option value="sa-east-1">sa-east-1 · São Paulo</option>
+              <option value="us-east-1">us-east-1 · N. Virgínia</option>
+              <option value="us-east-2">us-east-2 · Ohio</option>
+              <option value="us-west-2">us-west-2 · Oregon</option>
+              <option value="eu-west-1">eu-west-1 · Irlanda</option>
+            </select>
+          </label>
+        </form>
+
+        <ol class="steps">
+          <li class="step" data-reveal>
+            <span class="step__num">1</span>
+            <div class="step__body">
+              <h3>Crie o bucket</h3>
+              <p>No Console da AWS, abra o <strong>S3</strong> → <strong>Create bucket</strong>.
+                Use o nome <code class="js-bucket">atria-cloud-seunome</code> e a região
+                <code class="js-region">sa-east-1</code>. O resto pode ficar no padrão por enquanto.</p>
+            </div>
+          </li>
+
+          <li class="step" data-reveal>
+            <span class="step__num">2</span>
+            <div class="step__body">
+              <h3>Libere o acesso público</h3>
+              <p>Aba <strong>Permissions</strong> → <strong>Block public access</strong> → <strong>Edit</strong>.
+                Desmarque <em>Block all public access</em>, salve e digite <code>confirm</code>.</p>
+              <p class="callout"><svg aria-hidden="true"><use href="#i-shield"/></svg>
+                Só faça isso em buckets feitos para conteúdo público. Dados sensíveis nunca vão num bucket aberto.</p>
+            </div>
+          </li>
+
+          <li class="step" data-reveal>
+            <span class="step__num">3</span>
+            <div class="step__body">
+              <h3>Adicione a bucket policy</h3>
+              <p>Ainda em <strong>Permissions</strong> → <strong>Bucket policy</strong> → <strong>Edit</strong>.
+                Cole a policy abaixo: ela permite que qualquer pessoa <em>leia</em> (<code>s3:GetObject</code>) os arquivos do bucket.</p>
+              <div class="code" data-copy-target="policy-code">
+                <div class="code__bar"><span>bucket-policy.json</span>
+                  <button class="copy-btn" type="button" data-copy="policy-code">
+                    <svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copiar</span>
+                  </button>
+                </div>
+<pre id="policy-code"><code>{
+  <span class="t-key">"Version"</span>: <span class="t-str">"2012-10-17"</span>,
+  <span class="t-key">"Statement"</span>: [
+    {
+      <span class="t-key">"Sid"</span>: <span class="t-str">"PublicReadGetObject"</span>,
+      <span class="t-key">"Effect"</span>: <span class="t-str">"Allow"</span>,
+      <span class="t-key">"Principal"</span>: <span class="t-str">"*"</span>,
+      <span class="t-key">"Action"</span>: <span class="t-str">"s3:GetObject"</span>,
+      <span class="t-key">"Resource"</span>: <span class="t-str">"arn:aws:s3:::<span class="js-bucket">atria-cloud-seunome</span>/*"</span>
+    }
+  ]
+}</code></pre>
+              </div>
+            </div>
+          </li>
+
+          <li class="step" data-reveal>
+            <span class="step__num">4</span>
+            <div class="step__body">
+              <h3>Ative o static website hosting</h3>
+              <p>Aba <strong>Properties</strong> → role até o fim → <strong>Static website hosting</strong> → <strong>Edit</strong> → <em>Enable</em>.</p>
+              <ul class="checklist">
+                <li><svg aria-hidden="true"><use href="#i-check"/></svg>Index document: <code>index.html</code></li>
+                <li><svg aria-hidden="true"><use href="#i-check"/></svg>Error document: <code>error.html</code></li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="step" data-reveal>
+            <span class="step__num">5</span>
+            <div class="step__body">
+              <h3>Faça o upload dos arquivos</h3>
+              <p>Aba <strong>Objects</strong> → <strong>Upload</strong>. Arraste o <code>index.html</code>, o
+                <code>error.html</code> <em>e a pasta</em> <code>assets/</code>. O <code>index.html</code>
+                precisa ficar na raiz do bucket, não dentro de outra pasta.</p>
+              <div class="tree" aria-label="Estrutura esperada do bucket">
+                <span class="tree__root js-bucket">atria-cloud-seunome</span>
+                <span>├── index.html</span>
+                <span>├── error.html</span>
+                <span>└── assets/</span>
+                <span>    ├── styles.css · main.js</span>
+                <span>    └── favicon.svg · clouds-*.svg · logo</span>
+              </div>
+            </div>
+          </li>
+
+          <li class="step step--final" data-reveal>
+            <span class="step__num">6</span>
+            <div class="step__body">
+              <h3>Acesse o seu site</h3>
+              <p>Em <strong>Properties</strong> → <strong>Static website hosting</strong>, copie o
+                <em>Bucket website endpoint</em>. Deve ser parecido com:</p>
+              <div class="endpoint">
+                <code id="endpoint-url">http://atria-cloud-seunome.s3-website-sa-east-1.amazonaws.com</code>
+                <button class="copy-btn" type="button" data-copy="endpoint-url">
+                  <svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copiar</span>
+                </button>
+              </div>
+              <p class="muted">Abriu e apareceu “Você está no ar!” no card lá do topo? Deploy concluído. 🎉</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- TERMINAL -->
+    <section class="section" id="terminal">
+      <div class="container">
+        <div class="split">
+          <header class="section__head section__head--left" data-reveal>
+            <p class="kicker">Prefere o terminal?</p>
+            <h2 class="section__title">O mesmo deploy, em 6 comandos</h2>
+            <p class="section__lead">
+              Com a <strong>AWS CLI</strong> configurada (<code>aws configure</code>), rode os
+              comandos na pasta do projeto. É assim que o deploy vira algo automatizável
+              — num script ou numa pipeline de CI.
+            </p>
+            <div class="split__actions">
+              <button class="btn btn--ghost btn--sm" type="button" id="term-replay">
+                <svg aria-hidden="true"><use href="#i-play"/></svg> Rodar de novo
+              </button>
+              <button class="btn btn--ghost btn--sm copy-btn--plain" type="button" id="term-copy">
+                <svg aria-hidden="true"><use href="#i-copy"/></svg> <span>Copiar comandos</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="terminal" data-reveal>
+            <div class="window__bar">
+              <span class="window__dots"><i></i><i></i><i></i></span>
+              <span class="window__title">~/atria-cloud — zsh</span>
+            </div>
+            <pre class="terminal__body" id="term-body" aria-live="off"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POR QUE S3 -->
+    <section class="section" id="porque">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <p class="kicker">Por que S3?</p>
+          <h2 class="section__title">Pequeno no custo, gigante na escala</h2>
+        </header>
+
+        <div class="features">
+          <article class="feature" data-reveal>
+            <span class="feature__icon"><svg aria-hidden="true"><use href="#i-shield"/></svg></span>
+            <p class="feature__big">99,999999999%</p>
+            <h3>Durabilidade</h3>
+            <p>Os famosos “11 noves”: o S3 guarda cópias dos seus objetos em várias zonas de disponibilidade.</p>
+          </article>
+          <article class="feature" data-reveal>
+            <span class="feature__icon"><svg aria-hidden="true"><use href="#i-server-off"/></svg></span>
+            <p class="feature__big">0</p>
+            <h3>Servidores pra cuidar</h3>
+            <p>Sem EC2, sem patch de segurança, sem reiniciar nada às 3 da manhã. É serviço gerenciado.</p>
+          </article>
+          <article class="feature" data-reveal>
+            <span class="feature__icon"><svg aria-hidden="true"><use href="#i-rocket"/></svg></span>
+            <p class="feature__big">Auto</p>
+            <h3>Escala sozinho</h3>
+            <p>De 10 a 10 mil acessos sem mudar uma linha. O S3 aguenta o pico, você só assiste.</p>
+          </article>
+          <article class="feature" data-reveal>
+            <span class="feature__icon"><svg aria-hidden="true"><use href="#i-coin"/></svg></span>
+            <p class="feature__big">Centavos</p>
+            <h3>Pague pelo uso</h3>
+            <p>Você paga pelo que armazena e transfere. Um site pequeno como este custa quase nada por mês.</p>
+          </article>
+        </div>
+
+        <div class="next" data-reveal>
+          <h3 class="next__title">Próximos níveis</h3>
+          <ul class="next__list">
+            <li><strong>CloudFront</strong><span>CDN + HTTPS na frente do bucket.</span></li>
+            <li><strong>Route 53</strong><span>Seu próprio domínio apontando pro site.</span></li>
+            <li><strong>GitHub Actions</strong><span>Deploy automático a cada <code>git push</code>.</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA / CONSTELAÇÃO -->
+    <section class="section section--cta">
+      <div class="container">
+        <div class="cta" data-reveal>
+          <svg class="constellation" viewBox="0 0 400 260" aria-hidden="true">
+            <g class="constellation__lines">
+              <path d="M30 232 L224 30 L294 134 L355 220 Z"/>
+              <path d="M151 39 L224 30" class="faint"/>
+            </g>
+            <g class="constellation__stars">
+              <circle cx="224" cy="30" r="3.2"/>
+              <circle cx="151" cy="39" r="2.2"/>
+              <circle cx="294" cy="134" r="2.4"/>
+              <circle cx="355" cy="220" r="3"/>
+              <circle class="atria" cx="30" cy="232" r="5"/>
+            </g>
+            <text x="44" y="250" class="constellation__label">α · Atria</text>
+          </svg>
+          <div class="cta__copy">
+            <p class="kicker">Por que “Atria”?</p>
+            <h2 class="section__title">Agora é a sua vez de brilhar.</h2>
+            <p class="section__lead">
+              Atria é a estrela mais brilhante da constelação do Triângulo Austral, visível
+              aqui do hemisfério sul. Com um bucket e meia dúzia de cliques, o seu projeto
+              também fica visível pra qualquer pessoa no mundo.
+            </p>
+            <div class="hero__cta">
+              <a class="btn btn--primary" href="#passos">Voltar ao passo 1</a>
+              <a class="btn btn--ghost" href="https://atriajr.com.br/" target="_blank" rel="noopener">Conheça a Atria Jr</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <img src="assets/atria-logo-branco.webp" alt="Atria Jr" width="92" height="31">
+        <p>Empresa Júnior da Faculdade de Tecnologia da UNICAMP.</p>
+      </div>
+      <nav class="footer__links" aria-label="Atria Jr nas redes">
+        <a href="https://atriajr.com.br/" target="_blank" rel="noopener">Site</a>
+        <a href="https://www.instagram.com/atriajr" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.linkedin.com/company/atria-jr" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+      <p class="footer__meta">
+        Workshop Atria Cloud · <span id="year">2026</span> ·
+        servido por <code id="footer-host">—</code>
+      </p>
+    </div>
+  </footer>
+
+  <script src="assets/main.js" defer></script>
+</body>
+</html>
