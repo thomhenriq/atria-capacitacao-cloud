@@ -43,6 +43,8 @@
       <symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4c3-1 6-1 6-1s0 3-1 6l-6 6-4-4z"/><path d="M9 11l-4 1-2 3 4 .5M13 15l-1 4-3 2-.5-4"/><circle cx="16" cy="8" r="1.4"/></symbol>
       <symbol id="i-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.2c-.5-1-1.6-1.6-3-1.6-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.7M12 6v1.6M12 16.6V18"/></symbol>
       <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10-6.5z"/></symbol>
+      <symbol id="i-github" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
     </defs>
   </svg>
 
@@ -61,6 +63,10 @@
       <span class="pill pill--status" id="nav-status" data-state="local">
         <span class="pill__dot"></span><span id="nav-status-label">verificando…</span>
       </span>
+      <a class="nav__gh" href="https://github.com/thomhenriq/atria-capacitacao-cloud" target="_blank" rel="noopener"
+         aria-label="Código-fonte no GitHub" title="Código-fonte no GitHub">
+        <svg aria-hidden="true"><use href="#i-github"/></svg>
+      </a>
     </div>
   </header>
 
@@ -191,6 +197,28 @@
             abaixo se atualizam sozinhos.
           </p>
         </header>
+
+        <div class="repo" data-reveal>
+          <span class="repo__icon"><svg aria-hidden="true"><use href="#i-github"/></svg></span>
+          <div class="repo__copy">
+            <h3>Pegue os arquivos do site</h3>
+            <p>Clone o repositório ou baixe o ZIP: é exatamente o que vai pro bucket.</p>
+            <div class="repo__clone">
+              <code id="clone-cmd">git clone https://github.com/thomhenriq/atria-capacitacao-cloud.git</code>
+              <button class="copy-btn" type="button" data-copy="clone-cmd">
+                <svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copiar</span>
+              </button>
+            </div>
+          </div>
+          <div class="repo__actions">
+            <a class="btn btn--primary btn--sm" href="https://github.com/thomhenriq/atria-capacitacao-cloud/archive/refs/heads/main.zip">
+              <svg aria-hidden="true"><use href="#i-download"/></svg> Baixar ZIP
+            </a>
+            <a class="btn btn--ghost btn--sm" href="https://github.com/thomhenriq/atria-capacitacao-cloud" target="_blank" rel="noopener">
+              <svg aria-hidden="true"><use href="#i-github"/></svg> Ver no GitHub
+            </a>
+          </div>
+        </div>
 
         <form class="config" data-reveal onsubmit="return false" aria-label="Configuração do bucket">
           <label class="field">
@@ -438,7 +466,8 @@
       </nav>
       <p class="footer__meta">
         Workshop Atria Cloud · <span id="year">2026</span> ·
-        servido por <code id="footer-host">—</code>
+        servido por <code id="footer-host">—</code> ·
+        <a href="https://github.com/thomhenriq/atria-capacitacao-cloud" target="_blank" rel="noopener">código-fonte no GitHub</a>
       </p>
     </div>
   </footer>

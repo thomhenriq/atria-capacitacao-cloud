@@ -173,6 +173,21 @@ code {
 }
 .nav__links a:hover { color: var(--text); background: var(--surface-2); }
 
+.nav__gh {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.nav__gh svg { width: 18px; height: 18px; }
+.nav__gh:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-2); }
+
 .pill {
   display: inline-flex;
   align-items: center;
@@ -612,6 +627,53 @@ code {
 
 /* ----- Passo a passo ----- */
 
+.repo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px 20px;
+  margin-bottom: 16px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.repo__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: var(--text);
+  background: linear-gradient(160deg, rgba(143, 130, 214, 0.28), rgba(95, 51, 152, 0.18));
+  border: 1px solid var(--border-strong);
+}
+.repo__icon svg { width: 24px; height: 24px; }
+.repo__copy { min-width: 0; }
+.repo__copy h3 { margin: 0; font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+.repo__copy p { margin: 2px 0 12px; color: var(--muted); font-size: 0.95rem; }
+.repo__clone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 10px;
+  background: rgba(8, 6, 13, 0.7);
+  border: 1px solid var(--border);
+}
+.repo__clone code {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  color: var(--purple-200);
+  white-space: nowrap;
+  overflow-x: auto;
+  word-break: normal;
+  scrollbar-width: none;
+}
+.repo__clone .copy-btn { flex: none; }
+.repo__actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; }
+
 .config {
   display: grid;
   grid-template-columns: 1fr 260px;
@@ -1029,6 +1091,8 @@ code {
   color: var(--faint);
   font-size: 0.88rem;
 }
+.footer__meta a { color: var(--purple-300); text-underline-offset: 3px; }
+.footer__meta a:hover { color: var(--text); }
 
 /* ----- Reveal ----- */
 
@@ -1088,6 +1152,9 @@ code {
 @media (max-width: 860px) {
   .nav__links { display: none; }
   .pill--status { margin-left: auto; }
+  .nav__inner { gap: 12px; }
+  .repo__actions { grid-column: 1 / -1; }
+  .repo__actions .btn { flex: 1; }
 
   .flow { grid-template-columns: 1fr; justify-items: center; }
   .flow__node {
@@ -1134,6 +1201,10 @@ code {
   .step__body { padding: 18px; }
   .terminal__body { min-height: 360px; font-size: 0.76rem; }
   .brand__name { font-size: 1.05rem; }
+  .repo { grid-template-columns: 1fr; padding: 18px; }
+  .repo__icon { display: none; }
+  .repo__clone code { white-space: normal; overflow-wrap: anywhere; }
+  .repo__actions .btn { white-space: nowrap; }
 }
 
 @media (prefers-reduced-motion: reduce) {
