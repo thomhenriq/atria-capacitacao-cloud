@@ -23,6 +23,7 @@ protocolo e o horário do upload.
 │   ├── clouds-front.svg
 │   └── atria-logo-branco.webp
 ├── bucket-policy.json     # policy de leitura pública (troque NOME-DO-BUCKET)
+├── iam-policy-participantes.json  # IAM policy dos usuários do workshop
 └── README.md
 ```
 
@@ -38,8 +39,10 @@ python3 -m http.server 8080
 
 ## Deploy pelo Console da AWS
 
-1. **S3 → Create bucket.** O nome precisa ser único no mundo, por exemplo
-   `atria-cloud-seunome`. Use a região `sa-east-1` (São Paulo).
+1. **S3 → Create bucket.** O nome precisa seguir o padrão
+   `lab-<seu-usuario-iam>-<sufixo>`, por exemplo `lab-thom-site`. Use a região
+   `sa-east-1` (São Paulo). Com outro nome, a AWS responde *Access Denied*:
+   veja [Para o instrutor](#para-o-instrutor).
 2. **Permissions → Block public access → Edit.** Desmarque *Block all public
    access*, salve e digite `confirm`.
 3. **Permissions → Bucket policy → Edit.** Cole o conteúdo de
@@ -52,9 +55,9 @@ python3 -m http.server 8080
    hosting. Em `sa-east-1`, ele tem este formato:
    `http://SEU-BUCKET.s3-website-sa-east-1.amazonaws.com`
 
-> 💡 A seção “Passo a passo” do próprio site tem um campo para digitar o nome do
-> bucket. A policy, os comandos e o endpoint se atualizam com esse nome, prontos
-> para copiar.
+> 💡 Na seção “Passo a passo” do próprio site, cada participante digita o
+> usuário IAM e um sufixo. O site monta o nome do bucket e atualiza a policy, os
+> comandos e o endpoint, prontos para copiar.
 
 ## Deploy pela AWS CLI
 
@@ -62,7 +65,8 @@ Este roteiro precisa da [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/user
 configurada com `aws configure`. Rode os comandos na raiz do projeto:
 
 ```bash
-BUCKET=atria-cloud-seunome
+USUARIO=$(aws sts get-caller-identity --query Arn --output text | cut -d/ -f2)
+BUCKET=lab-$USUARIO-site
 REGION=sa-east-1
 
 aws s3 mb s3://$BUCKET --region $REGION
@@ -91,6 +95,25 @@ O bucket só gera custo enquanto existir. Para apagá-lo com todo o conteúdo:
 ```bash
 aws s3 rb s3://$BUCKET --force
 ```
+
+## Para o instrutor
+
+Cada participante entra com um usuário IAM próprio, que tem a policy
+[`iam-policy-participantes.json`](iam-policy-participantes.json). Ela só libera
+o S3 em buckets que começam com `lab-${aws:username}-`. Na hora de avaliar o
+pedido, a AWS troca a variável `${aws:username}` pelo nome do usuário logado.
+Assim, uma única policy serve para a turma toda, e ninguém mexe no bucket de
+outra pessoa.
+
+Antes do workshop, confira dois pontos:
+
+- **Nomes de usuário em minúsculas, sem `_`, `@` ou `+`.** Nomes de bucket só
+  aceitam minúsculas, números, pontos e hífens. Um usuário `Thom` nunca
+  conseguiria criar um bucket que bata com `lab-Thom-*`.
+- **Block Public Access da conta desligado.** Os participantes só conseguem
+  liberar o acesso público no próprio bucket. Se o bloqueio estiver ligado na
+  conta (ou imposto pela AWS Organizations), o `PutBucketPolicy` com leitura
+  pública é recusado mesmo assim.
 
 ## Próximos passos
 

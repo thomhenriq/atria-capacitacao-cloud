@@ -301,25 +301,57 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Configuração do bucket (nome + região)                              */
+  /* Configuração do bucket (usuário IAM + sufixo + região)              */
   /* ------------------------------------------------------------------ */
 
-  const DEFAULT_BUCKET = "atria-cloud-seunome";
-  const config = { bucket: DEFAULT_BUCKET, region: "sa-east-1" };
+  // A IAM policy dos participantes só libera buckets "lab-${aws:username}-*",
+  // então o nome do bucket é montado a partir do usuário IAM.
+  const DEFAULT_USER = "seu-usuario";
+  const DEFAULT_SUFFIX = "site";
+  const bucketName = (user, suffix) => `lab-${user}-${suffix}`;
+  const config = {
+    user: DEFAULT_USER,
+    bucket: bucketName(DEFAULT_USER, DEFAULT_SUFFIX),
+    region: "sa-east-1",
+  };
   const listeners = [];
 
   function validateBucket(name) {
-    if (!name) return null;
-    if (name.length < 3) return "Mínimo de 3 caracteres.";
-    if (!/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(name)) return "Use só minúsculas, números, pontos e hífens (começando e terminando com letra ou número).";
-    if (name.includes("..")) return "Não pode ter dois pontos seguidos.";
-    if (/^\d+\.\d+\.\d+\.\d+$/.test(name)) return "Não pode ter formato de endereço IP.";
-    if (name.startsWith("xn--")) return "Não pode começar com “xn--”.";
+    if (name.length > 63) return `O nome ficou com ${name.length} caracteres; o limite do S3 é 63. Encurte o sufixo.`;
+    if (!/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(name)) return "Nome de bucket inválido: use só minúsculas, números, pontos e hífens.";
+    if (name.includes("..")) return "O nome não pode ter dois pontos seguidos.";
     return null;
+  }
+
+  // O usuário não é convertido para minúsculas: ${aws:username} diferencia
+  // maiúsculas, e mudar o texto faria o nome deixar de bater com a policy.
+  function validateUser(user) {
+    if (/[A-Z]/.test(user)) return "Seu usuário IAM tem letras maiúsculas, mas nome de bucket só aceita minúsculas. Peça ao instrutor um usuário em minúsculas.";
+    if (!/^[a-z0-9.-]*$/.test(user)) return "Esse usuário tem caracteres que não cabem num nome de bucket (como _, @ ou +). Fale com o instrutor.";
+    return null;
+  }
+
+  function validateSuffix(suffix) {
+    if (!/^[a-z0-9.-]*$/.test(suffix)) return "O sufixo aceita só minúsculas, números, pontos e hífens.";
+    if (suffix && !/[a-z0-9]$/.test(suffix)) return "O sufixo precisa terminar com letra ou número.";
+    return null;
+  }
+
+  // "lab-thom-site" -> { user: "thom", suffix: "site" }. Se o usuário salvo
+  // bater com o começo do nome, ele resolve usuários que têm hífen.
+  function splitLabBucket(bucket, knownUser) {
+    if (!bucket || !bucket.startsWith("lab-")) return null;
+    const rest = bucket.slice(4);
+    if (knownUser && rest.startsWith(`${knownUser}-`)) {
+      return { user: knownUser, suffix: rest.slice(knownUser.length + 1) };
+    }
+    const dash = rest.indexOf("-");
+    return dash > 0 ? { user: rest.slice(0, dash), suffix: rest.slice(dash + 1) } : null;
   }
 
   function applyConfig() {
     $$(".js-bucket").forEach((el) => { el.textContent = config.bucket; });
+    $$(".js-user").forEach((el) => { el.textContent = config.user; });
     $$(".js-region").forEach((el) => { el.textContent = config.region; });
     const endpoint = $("#endpoint-url");
     if (endpoint) endpoint.textContent = websiteEndpoint(config.bucket, config.region);
@@ -327,41 +359,67 @@
   }
 
   function setupConfig() {
-    const input = $("#bucket-input");
+    const userInput = $("#user-input");
+    const suffixInput = $("#suffix-input");
     const select = $("#region-input");
-    const hint = $("#bucket-hint");
-    if (!input || !select) return;
-    const defaultHint = hint ? hint.textContent : "";
+    const msg = $("#config-msg");
+    if (!userInput || !suffixInput || !select) return;
 
-    // Se a página já está num bucket, ele vira o valor inicial.
-    const savedBucket = (host.kind.startsWith("s3") && host.bucket) || storage.get("atria-cloud:bucket");
+    const setMessage = (state, text) => {
+      if (!msg) return;
+      msg.dataset.state = state;
+      msg.textContent = text;
+    };
+
+    // Se a página já está num bucket "lab-...", ele vira o valor inicial.
+    const savedUser = storage.get("atria-cloud:user");
+    const fromHost = host.kind.startsWith("s3") ? splitLabBucket(host.bucket, savedUser) : null;
+    const initial = fromHost || { user: savedUser, suffix: storage.get("atria-cloud:suffix") };
     const savedRegion = (host.kind.startsWith("s3") && host.region) || storage.get("atria-cloud:region");
 
+    if (initial.user && !validateUser(initial.user)) userInput.value = initial.user;
+    if (initial.suffix && !validateSuffix(initial.suffix)) suffixInput.value = initial.suffix;
     if (savedRegion && !$(`option[value="${CSS.escape(savedRegion)}"]`, select)) {
       select.add(new Option(regionLabel(savedRegion), savedRegion));
     }
-    if (savedBucket && !validateBucket(savedBucket)) { input.value = savedBucket; config.bucket = savedBucket; }
     if (savedRegion) { select.value = savedRegion; config.region = savedRegion; }
 
-    input.addEventListener("input", () => {
-      const cleaned = input.value.toLowerCase().replace(/[\s_]+/g, "-");
-      if (cleaned !== input.value) input.value = cleaned;
-      const error = validateBucket(cleaned);
-      input.classList.toggle("is-invalid", Boolean(error));
-      if (hint) { hint.textContent = error || defaultHint; hint.classList.toggle("is-error", Boolean(error)); }
-      if (error) return;
-      config.bucket = cleaned || DEFAULT_BUCKET;
-      storage.set("atria-cloud:bucket", cleaned);
-      applyConfig();
-    });
+    function update() {
+      const cleanedSuffix = suffixInput.value.toLowerCase().replace(/[\s_]+/g, "-");
+      if (cleanedSuffix !== suffixInput.value) suffixInput.value = cleanedSuffix;
+      const user = userInput.value.trim();
+      const suffix = cleanedSuffix;
 
+      const userError = validateUser(user);
+      const suffixError = validateSuffix(suffix);
+      const bucket = bucketName(user || DEFAULT_USER, suffix || DEFAULT_SUFFIX);
+      const error = userError || suffixError || validateBucket(bucket);
+
+      userInput.classList.toggle("is-invalid", Boolean(userError));
+      suffixInput.classList.toggle("is-invalid", Boolean(suffixError || (!userError && error)));
+
+      // Com erro, os comandos continuam com o último nome válido.
+      if (error) { setMessage("error", error); return; }
+
+      config.user = user || DEFAULT_USER;
+      config.bucket = bucket;
+      storage.set("atria-cloud:user", user);
+      storage.set("atria-cloud:suffix", suffix);
+
+      if (!user) setMessage("neutral", "Digite o usuário IAM que você recebeu pro workshop.");
+      else setMessage("ok", `✓ Dentro da sua permissão: lab-${user}-*`);
+      applyConfig();
+    }
+
+    userInput.addEventListener("input", update);
+    suffixInput.addEventListener("input", update);
     select.addEventListener("change", () => {
       config.region = select.value;
       storage.set("atria-cloud:region", select.value);
       applyConfig();
     });
 
-    applyConfig();
+    update();
   }
 
   /* ------------------------------------------------------------------ */
@@ -378,6 +436,9 @@
     const { bucket: b, region: r } = config;
     const url = websiteEndpoint(b, r);
     return [
+      ["comment", "# 0. confere quem você é (o nome do bucket depende disso)"],
+      ["cmd", "aws sts get-caller-identity --query Arn --output text"],
+      ["out", `arn:aws:iam::123456789012:user/${config.user}`],
       ["comment", "# 1. cria o bucket"],
       ["cmd", `aws s3 mb s3://${b} --region ${r}`],
       ["out", `make_bucket: ${b}`],

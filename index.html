@@ -193,8 +193,8 @@
           <p class="kicker">Mão na massa</p>
           <h2 class="section__title">Passo a passo do deploy</h2>
           <p class="section__lead">
-            Escolha o nome do seu bucket e a região — todos os comandos e a policy
-            abaixo se atualizam sozinhos.
+            Informe seu usuário IAM, um sufixo e a região. O nome do bucket, a policy
+            e os comandos abaixo se atualizam sozinhos.
           </p>
         </header>
 
@@ -222,10 +222,14 @@
 
         <form class="config" data-reveal onsubmit="return false" aria-label="Configuração do bucket">
           <label class="field">
-            <span class="field__label">Nome do bucket</span>
-            <input id="bucket-input" type="text" autocomplete="off" spellcheck="false"
-                   placeholder="atria-cloud-seunome" maxlength="63" aria-describedby="bucket-hint">
-            <span class="field__hint" id="bucket-hint">Único no mundo todo: letras minúsculas, números e hífens.</span>
+            <span class="field__label">Seu usuário IAM</span>
+            <input id="user-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                   placeholder="seu-usuario" maxlength="64" aria-describedby="config-msg">
+          </label>
+          <label class="field">
+            <span class="field__label">Sufixo</span>
+            <input id="suffix-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                   placeholder="site" maxlength="40" aria-describedby="config-msg">
           </label>
           <label class="field field--region">
             <span class="field__label">Região</span>
@@ -237,6 +241,13 @@
               <option value="eu-west-1">eu-west-1 · Irlanda</option>
             </select>
           </label>
+          <div class="config__result">
+            <span class="field__label">Seu bucket</span>
+            <code class="config__bucket js-bucket">lab-seu-usuario-site</code>
+            <p class="config__msg" id="config-msg" data-state="neutral" aria-live="polite">
+              Digite o usuário IAM que você recebeu pro workshop.
+            </p>
+          </div>
         </form>
 
         <ol class="steps">
@@ -245,8 +256,29 @@
             <div class="step__body">
               <h3>Crie o bucket</h3>
               <p>No Console da AWS, abra o <strong>S3</strong> → <strong>Create bucket</strong>.
-                Use o nome <code class="js-bucket">atria-cloud-seunome</code> e a região
+                Use o nome <code class="js-bucket">lab-seu-usuario-site</code> e a região
                 <code class="js-region">sa-east-1</code>. O resto pode ficar no padrão por enquanto.</p>
+              <p class="callout"><svg aria-hidden="true"><use href="#i-shield"/></svg>
+                <span>O nome <strong>precisa</strong> começar com <code>lab-<span class="js-user">seu-usuario</span>-</code>.
+                Com qualquer outro nome, a AWS responde <em>Access Denied</em>.</span></p>
+              <details class="explain">
+                <summary>Por que esse nome? Entenda a IAM policy do workshop</summary>
+                <p>Seu usuário IAM tem uma policy que só libera ações do S3 em buckets que seguem este padrão:</p>
+                <div class="code">
+                  <div class="code__bar"><span>trecho da IAM policy dos participantes</span></div>
+<pre><code>{
+  <span class="t-key">"Effect"</span>: <span class="t-str">"Allow"</span>,
+  <span class="t-key">"Action"</span>: [<span class="t-str">"s3:CreateBucket"</span>, <span class="t-str">"s3:PutBucketPolicy"</span>, <span class="t-str">"s3:PutBucketWebsite"</span>, …],
+  <span class="t-key">"Resource"</span>: <span class="t-str">"arn:aws:s3:::lab-<span class="t-var">${aws:username}</span>-*"</span>
+}</code></pre>
+                </div>
+                <p><code>${aws:username}</code> é uma <strong>variável de policy</strong>: na hora de avaliar o
+                  pedido, a AWS troca ela pelo nome de quem está logado. Pra você, o recurso liberado vira
+                  <code>arn:aws:s3:::lab-<span class="js-user">seu-usuario</span>-*</code>. Assim, uma única policy
+                  serve pra turma toda, e ninguém mexe no bucket de outra pessoa.</p>
+                <p>Não sabe seu usuário? Ele aparece no menu do canto superior direito do Console, ou rode
+                  <code>aws sts get-caller-identity</code>.</p>
+              </details>
             </div>
           </li>
 
@@ -281,7 +313,7 @@
       <span class="t-key">"Effect"</span>: <span class="t-str">"Allow"</span>,
       <span class="t-key">"Principal"</span>: <span class="t-str">"*"</span>,
       <span class="t-key">"Action"</span>: <span class="t-str">"s3:GetObject"</span>,
-      <span class="t-key">"Resource"</span>: <span class="t-str">"arn:aws:s3:::<span class="js-bucket">atria-cloud-seunome</span>/*"</span>
+      <span class="t-key">"Resource"</span>: <span class="t-str">"arn:aws:s3:::<span class="js-bucket">lab-seu-usuario-site</span>/*"</span>
     }
   ]
 }</code></pre>
@@ -309,7 +341,7 @@
                 <code>error.html</code> <em>e a pasta</em> <code>assets/</code>. O <code>index.html</code>
                 precisa ficar na raiz do bucket, não dentro de outra pasta.</p>
               <div class="tree" aria-label="Estrutura esperada do bucket">
-                <span class="tree__root js-bucket">atria-cloud-seunome</span>
+                <span class="tree__root js-bucket">lab-seu-usuario-site</span>
                 <span>├── index.html</span>
                 <span>├── error.html</span>
                 <span>└── assets/</span>
@@ -326,7 +358,7 @@
               <p>Em <strong>Properties</strong> → <strong>Static website hosting</strong>, copie o
                 <em>Bucket website endpoint</em>. Deve ser parecido com:</p>
               <div class="endpoint">
-                <code id="endpoint-url">http://atria-cloud-seunome.s3-website-sa-east-1.amazonaws.com</code>
+                <code id="endpoint-url">http://lab-seu-usuario-site.s3-website-sa-east-1.amazonaws.com</code>
                 <button class="copy-btn" type="button" data-copy="endpoint-url">
                   <svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copiar</span>
                 </button>
@@ -344,7 +376,7 @@
         <div class="split">
           <header class="section__head section__head--left" data-reveal>
             <p class="kicker">Prefere o terminal?</p>
-            <h2 class="section__title">O mesmo deploy, em 6 comandos</h2>
+            <h2 class="section__title">O mesmo deploy, em 7 comandos</h2>
             <p class="section__lead">
               Com a <strong>AWS CLI</strong> configurada (<code>aws configure</code>), rode os
               comandos na pasta do projeto. É assim que o deploy vira algo automatizável

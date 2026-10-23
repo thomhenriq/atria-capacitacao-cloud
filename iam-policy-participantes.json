@@ -1,0 +1,52 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ValidarPoliticaNoConsole",
+            "Effect": "Allow",
+            "Action": "access-analyzer:ValidatePolicy",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetAccountPublicAccessBlock",
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutBucketPublicAccessBlock",
+                "s3:DeleteBucketWebsite",
+                "s3:PutBucketWebsite",
+                "s3:PutBucketOwnershipControls",
+                "s3:PutBucketPolicy",
+                "s3:CreateBucket",
+                "s3:ListBucket",
+                "s3:DeleteBucketPolicy",
+                "s3:DeleteBucket"
+            ],
+            "Resource": "arn:aws:s3:::lab-${aws:username}-*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::lab-${aws:username}-*/*"
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": "s3:Get*",
+            "Resource": "arn:aws:s3:::lab-${aws:username}-*"
+        }
+    ]
+}
